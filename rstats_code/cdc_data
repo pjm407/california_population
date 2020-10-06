@@ -37,7 +37,6 @@ ca_15_to_24_population <- ca_population %>%
 write.csv(ca_15_to_24_population, "~/Desktop/Berkeley/CA Population/ca_15_to_24_population.csv")
 ```
 
-
 **CDC - Total Population**
 
 ```{r}
