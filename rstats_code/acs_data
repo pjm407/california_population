@@ -37,12 +37,28 @@ write.csv(ca_2000_2018, "~/Desktop/Berkeley/CA Population/acs_2000_to_2018_raw.c
 ```{r}
 ca_acs_total <- ca_2000_2018 %>%
   group_by(year) %>%
-  summarise(total_acs_pop = sum(perwt))
-
+  mutate(race_new = case_when(race == 1 & hispan == 0 ~ "White",
+                              race == 2 & hispan == 0  ~ "African American",
+                              race == 3 & hispan == 0  ~ "American Indian",
+                              race == 4 & hispan == 0  ~ "Asian/Pacific Islander",
+                              race == 5 & hispan == 0  ~ "Asian/Pacific Islander",
+                              race == 6 & hispan == 0  ~ "Asian/Pacific Islander",
+                              race == 7 & hispan == 0  ~ "Other",
+                              race == 8 & hispan == 0  ~ "Other",
+                              race == 9 & hispan == 0  ~ "Other",
+                              hispan >= 1 & hispan <= 4 ~ "Hispanic/Latino")) %>%
+  group_by(year, race_new) %>%
+  mutate(total_race = sum(perwt)) %>%
+  dplyr::select(year, race_new, total_race) %>%
+  distinct(year, race_new, total_race) %>%
+  group_by(year) %>%
+  mutate(total_acs_pop = sum(total_race),
+         share_race = (total_race/total_acs_pop))
+         
 write.csv(ca_acs_total, "~/Desktop/Berkeley/CA Population/acs_total_population.csv")
 ```
 
-**ACS - Population By Race**
+**ACS - 18-25 Year Old Population**
 
 ```{r}
 ca_acs_race_total <- ca_2000_2018 %>%
@@ -66,5 +82,6 @@ ca_acs_race_total <- ca_2000_2018 %>%
   group_by(year) %>%
   mutate(ca_18_to_25_pop = sum(ca_18_to_25_race_total),
          ca_18_to_25_share = (ca_18_to_25_race_total/ca_18_to_25_pop))
+         
 write.csv(ca_acs_race_total, "~/Desktop/Berkeley/CA Population/acs_18_to_25_population.csv")
 ```
