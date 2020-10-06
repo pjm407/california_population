@@ -1,0 +1,54 @@
+library(tidyverse)
+
+**Turn Off Scientific Notation**
+
+```{r include=TRUE}
+options(scipen=15)
+print(1e15)
+```
+
+**CDC**
+
+```{r}
+ca_population <- fread("~/Desktop/Berkeley/CA Population/Bridged-Race Population Estimates 1990-2019 All.txt")
+names(ca_population) <- tolower(names(ca_population))
+
+ca_population <- ca_population %>%
+  filter(notes != "Total") %>%
+  dplyr::select(-notes,-'age group code', -'state code',-'ethnicity code', -'race code',-'yearly july 1st estimates code') %>%
+  rename(year = 'yearly july 1st estimates',
+         total = population)
+
+ca_15_to_24_population <- ca_population %>%
+  filter(`age group` == "15-19 years" | `age group` == "20-24 years") %>%
+  mutate(race_new = case_when(ethnicity == "Hispanic or Latino" ~ "Hispanic/Latino",
+                              race == "American Indian or Alaska Native" ~ "American Indian",
+                              race == "Asian or Pacific Islander" ~ "Asian/Pacific Islander",
+                              race == "Black or African American" ~ "African American",
+                              race == "White" ~ "White")) %>%
+  group_by(year, race_new) %>%
+  mutate(ca_15_to_24_race = sum(total)) %>%
+  dplyr::select(year, race_new, ca_15_to_24_race) %>%
+  distinct(year, race_new, ca_15_to_24_race) %>%
+  group_by(year) %>%
+  mutate(ca_15_to_24_pop = sum(ca_15_to_24_race),
+         ca_15_to_24_share = (ca_15_to_24_race/ca_15_to_24_pop))
+
+write.csv(ca_15_to_24_population, "~/Desktop/Berkeley/CA Population/ca_15_to_24_population.csv")
+
+ca_total_population <- ca_population %>%
+  mutate(race_new = case_when(ethnicity == "Hispanic or Latino" ~ "Hispanic/Latino",
+                              race == "American Indian or Alaska Native" ~ "American Indian",
+                              race == "Asian or Pacific Islander" ~ "Asian/Pacific Islander",
+                              race == "Black or African American" ~ "African American",
+                              race == "White" ~ "White")) %>%
+  group_by(year, race_new) %>%
+  mutate(total_race = sum(total)) %>%
+  dplyr::select(year, race_new, total_race) %>%
+  distinct(year, race_new, total_race) %>%
+  group_by(year) %>%
+  mutate(total_cdc_pop = sum(total_race),
+         share_race = (total_race/total_cdc_pop))
+  
+write.csv(ca_total_population, "~/Desktop/Berkeley/CA Population/ca_total_population.csv")
+```
