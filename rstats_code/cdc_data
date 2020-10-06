@@ -7,7 +7,7 @@ options(scipen=15)
 print(1e15)
 ```
 
-**CDC**
+**CDC - 15-24 Year-Old Population**
 
 ```{r}
 ca_population <- fread("~/Desktop/Berkeley/CA Population/Bridged-Race Population Estimates 1990-2019 All.txt")
@@ -35,7 +35,12 @@ ca_15_to_24_population <- ca_population %>%
          ca_15_to_24_share = (ca_15_to_24_race/ca_15_to_24_pop))
 
 write.csv(ca_15_to_24_population, "~/Desktop/Berkeley/CA Population/ca_15_to_24_population.csv")
+```
 
+
+**CDC - Total Population**
+
+```{r}
 ca_total_population <- ca_population %>%
   mutate(race_new = case_when(ethnicity == "Hispanic or Latino" ~ "Hispanic/Latino",
                               race == "American Indian or Alaska Native" ~ "American Indian",
