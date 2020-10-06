@@ -1,0 +1,70 @@
+
+
+
+**Import/Subset ACS**
+
+```{r}
+usa_2000 <- fread("~/Desktop/Berkeley/CA Population/usa_2000_2009.csv")
+names(usa_2000) <- tolower(names(usa_2000))
+ca_2000 <- usa_2000 %>%
+  drop_na(perwt) %>%
+  filter(statefip == 6)
+write.csv(ca_2000, "~/Desktop/Berkeley/CA Population/ca_2000.csv")
+```
+
+```{r}
+usa_2010 <- fread("~/Desktop/Berkeley/CA Population/usa_2010_2018.csv")
+names(usa_2010) <- tolower(names(usa_2010))
+ca_2010 <- usa_2010 %>%
+    drop_na(perwt) %>%
+    filter(statefip == 6)
+write.csv(ca_2010, "~/Desktop/Berkeley/CA Population/ca_2010.csv")
+```
+
+**Merge ACS Data**
+
+```{r}
+ca_2000 <- fread("~/Desktop/Berkeley/CA Population/ca_2000.csv")
+ca_2010 <- fread("~/Desktop/Berkeley/CA Population/ca_2010.csv")
+
+ca_2000_2018 <- rbind(ca_2000, ca_2010)
+write.csv(ca_2000_2018, "~/Desktop/Berkeley/CA Population/acs_2000_to_2018_raw.csv")
+
+```
+
+** ACS - Total Population**
+
+```{r}
+ca_acs_total <- ca_2000_2018 %>%
+  group_by(year) %>%
+  summarise(total_acs_pop = sum(perwt))
+
+write.csv(ca_acs_total, "~/Desktop/Berkeley/CA Population/acs_total_population.csv")
+```
+
+**ACS - Population By Race**
+
+```{r}
+ca_acs_race_total <- ca_2000_2018 %>%
+  group_by(year) %>%
+  mutate(age_new = case_when(age < 18 ~ "Under 18",
+                             age >= 18 & age <= 25 ~ "18 to 25",
+                             age > 25 ~ "25+"),
+         race_new = case_when(race == 1 & hispan == 0 ~ "White",
+                              race == 2 & hispan == 0  ~ "African American",
+                              race == 3 & hispan == 0  ~ "American Indian",
+                              race == 4 & hispan == 0  ~ "Asian/Pacific Islander",
+                              race == 5 & hispan == 0  ~ "Asian/Pacific Islander",
+                              race == 6 & hispan == 0  ~ "Asian/Pacific Islander",
+                              race == 7 & hispan == 0  ~ "Other",
+                              race == 8 & hispan == 0  ~ "Other",
+                              race == 9 & hispan == 0  ~ "Other",
+                              hispan >= 1 & hispan <= 4 ~ "Hispanic/Latino")) %>%
+  filter(age_new == "18 to 25") %>%
+  group_by(year, race_new) %>%
+  summarise(ca_18_to_25_race_total = sum(perwt)) %>%
+  group_by(year) %>%
+  mutate(ca_18_to_25_pop = sum(ca_18_to_25_race_total),
+         ca_18_to_25_share = (ca_18_to_25_race_total/ca_18_to_25_pop))
+write.csv(ca_acs_race_total, "~/Desktop/Berkeley/CA Population/acs_18_to_25_population.csv")
+```
