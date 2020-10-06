@@ -1,7 +1,7 @@
 # California Population
 
 ## Task - 
-Calculate annual California population by race for ages 15 - 24.
+Calculate annual California population between 1990 and 2019 by race for ages 15 - 24 (or 18 - 25).
 
 ## Data - 
 
